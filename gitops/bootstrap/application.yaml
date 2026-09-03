@@ -1,5 +1,5 @@
-# Optional Application for the hub cluster GitOps (wave 20).
-# Point spec.source.repoURL at this repository.
+# Apply on the SPOKE cluster GitOps (not the MaaS hub).
+# destination.server in-cluster = the spoke API.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,7 +14,7 @@ spec:
   source:
     repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
     targetRevision: main
-    path: gitops/overlays/demo
+    path: gitops/overlays/spoke
   destination:
     server: https://kubernetes.default.svc
     namespace: demo-granite

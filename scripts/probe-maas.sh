@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-# Probe Granite (or another MaaS model) through the cluster gateway.
+# Probe Granite through the *hub* MaaS gateway (OpenAI-compatible).
+# Do NOT derive the hostname from the spoke cluster ingress.
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')}"
-HOST="${MAAS_HOST:-https://maas.${DOMAIN}}"
 MODEL="${MODEL:-granite-3-0-8b-instruct}"
 KEY="${MAAS_API_KEY:-}"
+HOST="${MAAS_HOST:-}"
 
+if [[ -z "${HOST}" ]]; then
+  echo "Set MAAS_HOST=https://maas.apps.<HUB_DOMAIN> (MaaS cluster, not the spoke)." >&2
+  exit 1
+fi
 if [[ -z "${KEY}" ]]; then
-  echo "MAAS_API_KEY is empty; create one with ./scripts/create-maas-key.sh" >&2
+  echo "MAAS_API_KEY is empty; create one with KUBECONFIG of the hub: ./scripts/create-maas-key.sh" >&2
   exit 1
 fi
 
+HOST="${HOST%/}"
 echo "GET ${HOST}/v1/models"
 curl -sk -H "Authorization: Bearer ${KEY}" "${HOST}/v1/models" | jq .
 

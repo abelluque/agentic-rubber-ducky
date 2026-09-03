@@ -2,29 +2,24 @@
 
 La demo necesita runtime **además** de MaaS: operador Llama Stack, PostgreSQL para metadatos, MongoDB para LibreChat, y el chart de LibreChat. Todo eso vive en [`platform/`](../platform/README.md).
 
-## 1. Llama Stack Operator (RHOAI 3.4)
+## 1. Llama Stack Operator (spoke, sin MaaS)
 
-No se instala un CSV suelto si OpenShift AI ya está en el clúster. El procedimiento soportado es activar el componente en el `DataScienceCluster`:
+Por defecto el spoke **no** tiene OpenShift AI. `platform/operators` instala `llama-stack-k8s-operator` desde `community-operators` en `llama-stack-system`. La `LlamaStackDistribution` usa `distribution.name: remote-vllm` y `VLLM_URL` apuntando al gateway del **hub**.
 
-```yaml
-spec:
-  components:
-    llamastackoperator:
-      managementState: Managed
-```
-
-El Job `enable-llamastack-operator` hace un **merge patch** de esa única clave sobre `default-dsc`. No reescribe el resto del DSC.
-
-Verificación:
+Si el spoke ya tiene RHOAI y se quiere el operador in-tree:
 
 ```bash
-oc get datasciencecluster default-dsc \
-  -o jsonpath='{.spec.components.llamastackoperator.managementState}'
-oc -n redhat-ods-applications get pods -l name=llama-stack-k8s-operator
-oc get crd llamastackdistributions.llamastack.io
+oc apply -k platform/operators-with-rhoai
 ```
 
-Fallback (solo labs **sin** RHOAI gestionando el operador): `platform/operators/llamastack/subscription-community.yaml`. No está en el `kustomization` por defecto para no duplicar el operador.
+Eso parchea `llamastackoperator.managementState: Managed` y **quita** la Subscription community. No aplicar ambos.
+
+Verificación (spoke):
+
+```bash
+oc get crd llamastackdistributions.llamastack.io
+oc -n llama-stack-system get csv,pods
+```
 
 CRD vendorizada: `platform/crds/llamastack.io_llamastackdistributions.yaml` (snapshot de [opendatahub-io/llama-stack-k8s-operator](https://github.com/opendatahub-io/llama-stack-k8s-operator)). En un cluster vivo el operador reconcilia la CRD; aplicar el snapshot a mano solo tiene sentido en air-gap o para que Argo conozca el esquema antes del CSV.
 
@@ -66,6 +61,6 @@ CR: `mongodbcommunity.mongodb.com/v1 MongoDBCommunity` `librechat-mongo` (1 miem
 
 ## 5. Orden y RBAC
 
-El Job del DSC necesita `patch` sobre `datascienceclusters` (ClusterRole). Las Subscriptions las aplica un usuario `cluster-admin` o Argo CD con el mismo privilegio que ya usa el GitOps de RHOAI.
+Las Subscriptions las aplica un `cluster-admin` del **spoke** (o Argo CD en ese clúster). El overlay `with-rhoai` es el único que necesita `patch` sobre `datascienceclusters`.
 
-No se instala Service Mesh 3. MongoDB Community y CNPG declaran SCC/anyuid en sus CSV; no añadir SCC extra salvo que el cluster lo exija.
+No se instala Service Mesh 3. No se instala el plano MaaS en el spoke.

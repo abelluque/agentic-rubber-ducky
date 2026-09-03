@@ -15,6 +15,15 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: llama-stack-system
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: demo-granite
   labels:
     app.kubernetes.io/part-of: rhoai-granite-code-demo
+    # Spoke cluster only. MaaS/Granite live on the hub cluster.
+    agentic-rubber-ducky/role: spoke

@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
     targetRevision: main
-    path: gitops/overlays/demo-with-operators
+    path: gitops/overlays/spoke
   destination:
     server: https://kubernetes.default.svc
     namespace: demo-granite

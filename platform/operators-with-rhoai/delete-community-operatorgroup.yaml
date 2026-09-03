@@ -1,0 +1,6 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: llama-stack
+  namespace: llama-stack-system
+$patch: delete

@@ -1,11 +1,18 @@
+llamastack:
+  enabled: true
+  # community = OLM llama-stack-k8s-operator on the spoke (default, no RHOAI).
+  # rhoai = patch DataScienceCluster on a spoke that already has OpenShift AI.
+  mode: community
+  namespace: llama-stack-system
+  channel: alpha
+  catalog: community-operators
+  catalogNamespace: openshift-marketplace
+  installPlanApproval: Automatic
+
 dsc:
   name: default-dsc
   namespace: redhat-ods-operator
   toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
-
-llamastack:
-  enabled: true
-  communityFallback: false
 
 cloudnativepg:
   enabled: true

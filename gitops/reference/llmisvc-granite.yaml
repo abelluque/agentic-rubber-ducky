@@ -1,5 +1,5 @@
-# Referencia documental. NO se aplica desde gitops/overlays/demo.
-# La fuente de verdad del modelo es rhoai-gitops (overlay ocpai-prd-mtz / opentlc).
+# Referencia documental del HUB. NO aplicar en el spoke.
+# La fuente de verdad del modelo es rhoai-gitops.
 #
 # Contrato MaaS: LLMInferenceService + MaaSModelRef + MaaSSubscription + MaaSAuthPolicy.
 # No usar serving.kserve.io/v1beta1 InferenceService para Granite en esta plataforma.

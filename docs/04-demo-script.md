@@ -4,21 +4,31 @@ Duración objetivo: **12–15 minutos**. Audiencia: arquitectos de plataforma, A
 
 ## Antes de abrir LibreChat (3 min)
 
-En una terminal, ya autenticado en el **clúster hub**:
+Terminal **hub** (MaaS):
 
 ```bash
+export KUBECONFIG=/path/to/hub.kubeconfig
+export MAAS_HOST=https://maas.apps.<HUB_DOMAIN>
+export MAAS_API_KEY=sk-oai-...
 oc get llminferenceservice -n ai-models
 ./scripts/probe-maas.sh
+```
+
+Terminal **spoke** (esta demo):
+
+```bash
+export KUBECONFIG=/path/to/spoke.kubeconfig
 oc -n demo-granite get pods
+./scripts/probe-maas-from-spoke.sh
 ```
 
 Mostrar:
 
-1. `granite-3-0-8b-instruct` (o 2B en lab) `Ready`.
-2. Probe MaaS con HTTP 200.
-3. Pods `librechat`, `orchestrator`, `llamastack`, `mcp-*` Running.
+1. En el hub: `granite-3-0-8b-instruct` `Ready`.
+2. Probe MaaS 200 (desde laptop o desde el pod del spoke).
+3. En el spoke: Pods `librechat`, `orchestrator`, `llamastack`, `mcp-*` Running.
 
-Comentar en una frase: *el modelo no es un contenedor de la demo; es un servicio de plataforma con API key y cuota.*
+Comentar: *el modelo no corre en este clúster; el spoke es un cliente del gateway MaaS.*
 
 Si `DRY_RUN=true` (default), anunciarlo: *las mutaciones están simuladas; el razonamiento es real contra Granite.*
 

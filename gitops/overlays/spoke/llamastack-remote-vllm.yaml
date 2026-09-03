@@ -1,0 +1,8 @@
+apiVersion: llamastack.io/v1alpha1
+kind: LlamaStackDistribution
+metadata:
+  name: llamastack
+spec:
+  server:
+    distribution:
+      name: remote-vllm

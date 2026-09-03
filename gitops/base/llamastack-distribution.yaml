@@ -38,7 +38,9 @@ spec:
         - name: FMS_ORCHESTRATOR_URL
           value: http://localhost
     distribution:
-      name: rh-dev
+      # Spoke cluster: remote vLLM = MaaS gateway on the *hub* cluster.
+      # Use name: rh-dev only if this cluster has OpenShift AI (overlay with-rhoai).
+      name: remote-vllm
     storage:
       size: 5Gi
 # The Llama Stack operator creates Service/llamastack on port 8321. Do not duplicate it here.

@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Default overlay for the SPOKE OpenShift cluster.
+# Does not install MaaS or Granite. Inference is HTTPS to the hub gateway.
+resources:
+  - ../demo-with-operators
+patches:
+  - path: llamastack-remote-vllm.yaml
+  - target:
+      kind: ConfigMap
+      name: demo-pipeline
+    patch: |-
+      - op: replace
+        path: /data/MAAS_HOST
+        value: https://maas.apps.CHANGE_ME.example.com
+      - op: replace
+        path: /data/MAAS_BASE_URL
+        value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct
+      - op: replace
+        path: /data/MAAS_VLLM_URL
+        value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct/v1
+  - target:
+      kind: LlamaStackDistribution
+      name: llamastack
+    patch: |-
+      - op: replace
+        path: /spec/server/containerSpec/env/0/value
+        value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct/v1

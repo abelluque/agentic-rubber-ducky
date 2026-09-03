@@ -2,10 +2,13 @@
 
 Demo de **IA agéntica** sobre **Red Hat OpenShift AI (RHOAI) 3.4** y **Models as a Service (MaaS)**. Un desarrollador describe un cambio en lenguaje natural desde **LibreChat**. **Llama Stack** orquesta tres agentes especializados. El razonamiento y la generación de código los ejecuta **IBM Granite 3.0 8B Instruct**, consumido como modelo de plataforma a través del gateway MaaS (API OpenAI-compatible, API key `sk-oai-…`, rate limiting y políticas de Kuadrant).
 
-Este repositorio **no reinstala la plataforma MaaS**. Consume el plano de inferencia declarado en:
+Este repositorio **no se instala en el clúster MaaS**. Se despliega en un OpenShift **spoke** y consume el gateway HTTPS del hub:
 
-- GitOps de plataforma: [`abelluque/rhoai-gitops`](https://github.com/abelluque/rhoai-gitops/tree/rhoai-maas-demo-platform) (rama `rhoai-maas-demo-platform`)
-- Guía de despliegue: [RHOAI Models-as-a-Service Guide](https://rh-aiservices-bu.github.io/rhoai-maas-guide/modules/main/index.html)
+- Hub (inferencia): [`abelluque/rhoai-gitops`](https://github.com/abelluque/rhoai-gitops/tree/rhoai-maas-demo-platform) (rama `rhoai-maas-demo-platform`)
+- Spoke (esta demo): [`abelluque/agentic-rubber-ducky`](https://github.com/abelluque/agentic-rubber-ducky)
+- Guía MaaS: [RHOAI Models-as-a-Service Guide](https://rh-aiservices-bu.github.io/rhoai-maas-guide/modules/main/index.html)
+
+Detalle multi-clúster: [`docs/07-multi-cluster-maas.md`](docs/07-multi-cluster-maas.md).
 
 ## El problema
 
@@ -33,31 +36,21 @@ Todas las inferencias pasan por el **gateway MaaS** (`maas.<cluster-domain>`), c
                [ Desarrollador ]
                        │
                        ▼
-                 [ LibreChat ]
-                       │  OpenAI-compatible
+         [ SPOKE: LibreChat + Llama Stack + agents ]
+                       │  HTTPS Bearer sk-oai-…
                        ▼
-          [ Orchestrator / Llama Stack ]
-                       │
-       ┌───────────────┼───────────────┐
-       ▼               ▼               ▼
-[ Code Agent ]  [ GitHub Agent ]  [ ArgoCD & OCP Agent ]
-       │               │               │
-       └───────────────┴───────────────┘
-                       │
-                       ▼
-             [ RHOAI MaaS Platform ]
-         (Inferencia: IBM Granite LLM)
+         [ HUB: RHOAI MaaS · IBM Granite LLM ]
                        │
         ┌──────────────┼──────────────┐
         ▼              ▼              ▼
-  [ GitHub Repos ] [ ArgoCD ] [ OpenShift Target Cluster ]
+  [ GitHub Repos ] [ ArgoCD ] [ OpenShift QA ]
 ```
 
 ## Qué hay en este repositorio
 
 | Ruta | Contenido |
 | --- | --- |
-| `docs/` | Arquitectura, consumo de Granite vía MaaS, flujo multi-agente, guion de demo y seguridad. |
+| `docs/` | Arquitectura, MaaS remoto, flujo multi-agente, guion, operadores, **multi-clúster**. |
 | `gitops/` | Kustomize para LibreChat, Llama Stack (`LlamaStackDistribution` `rh-dev`), orquestador y servidores MCP. |
 | `llamastack/` | `run.yaml` y definición de agentes / toolgroups MCP. |
 | `librechat/` | Endpoint custom apuntando al orquestador. |
@@ -71,44 +64,40 @@ Por defecto las herramientas corren en **`DRY_RUN=true`**: simulan PR, sync y `o
 
 ### Operadores y Helm (capa agéntica)
 
-MaaS/Granite ya están en el GitOps de plataforma. Lo que falta en el cluster para esta demo (Llama Stack Operator, Postgres, MongoDB, LibreChat) está en [`platform/`](platform/README.md):
+MaaS/Granite viven en el **hub**. En el **spoke** se instalan Llama Stack (OLM community), Postgres, MongoDB y LibreChat:
 
 ```bash
+# kubeconfig = spoke
 ./platform/scripts/install-platform.sh
 ```
 
-Detalle: [`docs/06-platform-operators.md`](docs/06-platform-operators.md). Overlay que consume esos operadores: `gitops/overlays/demo-with-operators`.
+Detalle: [`docs/06-platform-operators.md`](docs/06-platform-operators.md), [`docs/07-multi-cluster-maas.md`](docs/07-multi-cluster-maas.md). Overlay: `gitops/overlays/spoke`.
 
 ## Prerrequisitos
 
-- Clúster OpenShift **4.19+** con RHOAI **3.4** y MaaS ya instalados (GitOps de plataforma o [guía MaaS](https://rh-aiservices-bu.github.io/rhoai-maas-guide/modules/main/index.html)).
-- `LLMInferenceService` Granite listo (`granite-3-0-8b-instruct` en GPU, o `granite-3-1-2b-instruct` en lab CPU).
-- `oc`, `curl`, `jq`. Para el flujo completo: token GitHub, token Argo CD y kubeconfig del clúster QA (secrets, no Git).
-- Operador **Llama Stack**: se activa con `platform/operators` (`llamastackoperator: Managed` en el DSC). Distribution `rh-dev`.
-- Ruta con operadores: CloudNativePG, MongoDB Community (OLM) y el chart Helm de LibreChat (`./platform/scripts/install-platform.sh`).
+- **Hub:** OpenShift con RHOAI 3.4 + MaaS y Granite `Ready` ([guía](https://rh-aiservices-bu.github.io/rhoai-maas-guide/modules/main/index.html) o `rhoai-gitops`). El gateway `https://maas.apps.<HUB_DOMAIN>` debe ser alcanzable desde el spoke (`:443`).
+- **Spoke:** OpenShift **distinto** (4.19+), cluster-admin, `oc`/`helm`/`jq`. No requiere GPU ni el plano MaaS.
+- `oc`, `curl`, `jq`. Flujo GitOps completo: token GitHub, token Argo CD del QA, kubeconfig del clúster QA (secrets, no Git).
+- En el spoke: operadores de `platform/operators` (Llama Stack community, CloudNativePG, MongoDB Community).
 
 ## Arranque rápido
 
 ```bash
-# 1. Autenticarse en el clúster hub (donde vive MaaS)
-oc whoami
-
-# 2. Comprobar Granite a través del gateway MaaS
+# A. Hub — emitir API key y probar Granite
+export KUBECONFIG=/path/to/hub.kubeconfig
+export MAAS_HOST=https://maas.apps.<HUB_DOMAIN>
+export MAAS_API_KEY="$(./scripts/create-maas-key.sh | jq -r .key)"
 ./scripts/probe-maas.sh
-MODEL=granite-3-0-8b-instruct ./scripts/probe-maas.sh
 
-# 3. Crear una API key de suscripción free (no se versiona)
-./scripts/create-maas-key.sh
-
-# 4. Rellenar secretos a partir de los ejemplos
+# B. Spoke — secretos + stack agéntico
+export KUBECONFIG=/path/to/spoke.kubeconfig
 cp gitops/base/secrets/demo-secrets.yaml.example /tmp/demo-secrets.yaml
-# editar /tmp/demo-secrets.yaml  →  oc apply -f /tmp/demo-secrets.yaml
-
-# 5. Desplegar la capa agéntica
-oc apply -k gitops/overlays/demo
+# pegar MAAS_API_KEY en demo-maas.api-key; sustituir CHANGE_ME del overlay spoke
+./platform/scripts/install-platform.sh
+./scripts/probe-maas-from-spoke.sh
 ```
 
-Guion de la sesión en [`docs/04-demo-script.md`](docs/04-demo-script.md). Arquitectura detallada en [`docs/01-architecture.md`](docs/01-architecture.md).
+Guion de la sesión en [`docs/04-demo-script.md`](docs/04-demo-script.md). Topología hub/spoke en [`docs/07-multi-cluster-maas.md`](docs/07-multi-cluster-maas.md). Arquitectura en [`docs/01-architecture.md`](docs/01-architecture.md).
 
 ## Contrato con la plataforma MaaS
 

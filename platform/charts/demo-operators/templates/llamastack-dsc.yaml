@@ -1,4 +1,4 @@
-{{- if .Values.llamastack.enabled }}
+{{- if and .Values.llamastack.enabled (eq .Values.llamastack.mode "rhoai") }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:

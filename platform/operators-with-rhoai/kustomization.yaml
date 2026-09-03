@@ -1,0 +1,11 @@
+# Optional: spoke already has OpenShift AI. Mutually exclusive with the
+# community Subscription in platform/operators/llamastack.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../operators
+  - rbac-dsc-patch.yaml
+  - job-enable-llamastack.yaml
+patches:
+  - path: delete-community-subscription.yaml
+  - path: delete-community-operatorgroup.yaml

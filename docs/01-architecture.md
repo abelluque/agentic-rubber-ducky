@@ -2,14 +2,15 @@
 
 ## 1. Posición de esta demo en la plataforma
 
-Hay dos planos que no se deben mezclar:
+Hay **tres** planos. No se mezclan:
 
-| Plano | Repositorio | Qué declara |
-| --- | --- | --- |
-| **Plataforma MaaS** | [`rhoai-gitops`](https://github.com/abelluque/rhoai-gitops/tree/rhoai-maas-demo-platform) (rama `rhoai-maas-demo-platform`) | Operadores, Gateway API, Kuadrant/Authorino, `maas-api`, `LLMInferenceService` Granite, suscripciones |
-| **Aplicación agéntica** | este repo (`rhoai-granite-code-demo`) | LibreChat, Llama Stack, orquestador, MCP tools, sample-app de QA |
+| Plano | Dónde | Repositorio | Qué declara |
+| --- | --- | --- | --- |
+| **Hub MaaS** | Clúster de inferencia | [`rhoai-gitops`](https://github.com/abelluque/rhoai-gitops/tree/rhoai-maas-demo-platform) | Gateway, Kuadrant, `LLMInferenceService` Granite, suscripciones |
+| **Spoke agéntico** | OpenShift **distinto** | este repo | LibreChat, Llama Stack `remote-vllm`, orquestador, MCP, operadores |
+| **QA** | Opcional, tercer clúster | `sample-app/gitops` | App `orders-qa` |
 
-La guía [RHOAI Models-as-a-Service](https://rh-aiservices-bu.github.io/rhoai-maas-guide/modules/main/index.html) describe las fases 1–6 de la plataforma (prerrequisitos → modelo → verificación). Esta demo asume esas fases **completadas**. Consume Granite como un tenant más del gateway.
+La demo asume el hub **ya** sirve Granite. El spoke es un cliente HTTPS (`MAAS_HOST` + `sk-oai-…`). Ver [`07-multi-cluster-maas.md`](07-multi-cluster-maas.md).
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -100,13 +101,13 @@ LibreChat  ──(red cluster)──►  Orchestrator
 - `DRY_RUN=true` por defecto: las mutaciones se registran y se devuelve un payload simulado.
 - La API key MaaS (`sk-oai-…`) autentica **solo** inferencia. No abre GitHub ni el clúster QA.
 
-## 5. Relación con sync-waves de la plataforma
+## 5. Relación con el hub GitOps
 
-La plataforma GitOps instala MaaS en waves −1…7 (cert-manager → RHCL → Gateway → Postgres → RHOAI → `llmisvc-*` → `maas-subscriptions`). Esta demo es una **Application hija posterior** (wave 20, proyecto `demo-granite`). No declara `DataScienceCluster`, ni Gateway, ni `LLMInferenceService` de Granite: asume que ya están `Synced/Healthy`.
+La plataforma MaaS en el hub usa waves −1…7. **Este repo no se aplica allí.** En el spoke, Argo CD (`platform/gitops`) usa waves 10–20 sobre `kubernetes.default.svc` del spoke. No declara `DataScienceCluster` de MaaS, ni Gateway, ni `LLMInferenceService`.
 
-Si se necesita un overlay de referencia del modelo (documentación, no fuente de verdad), está en [`gitops/reference/llmisvc-granite.yaml`](../gitops/reference/llmisvc-granite.yaml). El manifiesto canónico vive en `rhoai-gitops`.
+El manifiesto de referencia del modelo (solo documentación del hub) está en [`gitops/reference/llmisvc-granite.yaml`](../gitops/reference/llmisvc-granite.yaml).
 
-Operadores, CRDs y Helm de la capa agéntica: [`docs/06-platform-operators.md`](06-platform-operators.md) y [`platform/`](../platform/README.md). Overlay `gitops/overlays/demo-with-operators` elimina Postgres/Mongo/LibreChat embebidos y apunta Llama Stack al Cluster CNPG.
+Operadores del spoke: [`docs/06-platform-operators.md`](06-platform-operators.md). Overlay: `gitops/overlays/spoke`.
 
 ## 6. Identidad del modelo
 

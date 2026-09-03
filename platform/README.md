@@ -4,21 +4,20 @@ Esta carpeta instala **lo que la demo agéntica necesita en el clúster** y que 
 
 | Componente | Cómo se instala | Qué aporta |
 | --- | --- | --- |
-| **Llama Stack Operator** | `DataScienceCluster.llamastackoperator.managementState: Managed` (RHOAI 3.4) | CRD `LlamaStackDistribution` (`llamastack.io/v1alpha1`) |
+| **Llama Stack Operator** | OLM `llama-stack-k8s-operator` en el **spoke** (community). Overlay opcional `with-rhoai` si ese clúster ya tiene OpenShift AI. | CRD `LlamaStackDistribution` |
 | **CloudNativePG** | OLM Subscription `cloudnative-pg` | CRD `Cluster` (`postgresql.cnpg.io/v1`) para Postgres de Llama Stack |
 | **MongoDB Community Operator** | OLM Subscription `mongodb-community-operator` | CRD `MongoDBCommunity` para LibreChat |
 | **LibreChat** | Helm chart local `charts/librechat` | UI, Route, ConfigMap del endpoint Granite |
 | **Llama Stack Postgres** | Helm chart `charts/llamastack-postgres` | `Cluster` CNPG `llamastack-pg` |
 | **LibreChat MongoDB** | Helm chart `charts/librechat-mongodb` | Replica set de 1 miembro para demos |
 
-No reinstala RHOAI, Gateway MaaS ni Granite. Esos siguen en el GitOps de plataforma.
+No reinstala RHOAI, Gateway MaaS ni Granite. Esos viven en el **hub** (`rhoai-gitops`). Este árbol se aplica en el **spoke**. Ver [`docs/07-multi-cluster-maas.md`](../docs/07-multi-cluster-maas.md).
 
 ```text
-wave 10  platform/operators     OLM + DSC patch (Llama Stack Operator)
-wave 11  wait CRDs              llamastackdistributions, clusters.postgresql.cnpg.io, mongodbcommunity
-wave 12  Helm charts            Postgres CNPG + MongoDB + LibreChat
-wave 20  gitops/overlays/demo-with-operators
-                                LlamaStackDistribution, orchestrator, MCP
+wave 10  platform/operators     OLM on spoke (Llama Stack community, CNPG, MongoDB)
+wave 11  wait CRDs
+wave 12  operands + LibreChat Helm
+wave 20  gitops/overlays/spoke  remote-vllm → hub MaaS
 ```
 
 ## Arranque
@@ -38,7 +37,7 @@ helm upgrade --install librechat platform/charts/librechat \
   --set existingSecret=demo-librechat
 
 # 4. Capa agéntica (apunta a CNPG/Mongo del operador, no a Deployments embebidos)
-oc apply -k gitops/overlays/demo-with-operators
+oc apply -k gitops/overlays/spoke
 ```
 
 Atajo: `./platform/scripts/install-platform.sh`

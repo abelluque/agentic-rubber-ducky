@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: wait-llamastack-crd
-  namespace: redhat-ods-operator
+  name: wait-demo-crds
+  namespace: llama-stack-system
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
@@ -12,7 +12,7 @@ spec:
   ttlSecondsAfterFinished: 600
   template:
     spec:
-      serviceAccountName: enable-llamastack
+      serviceAccountName: wait-demo-crds
       restartPolicy: OnFailure
       containers:
         - name: wait

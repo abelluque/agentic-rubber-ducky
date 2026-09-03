@@ -4,7 +4,7 @@ Este documento describe cómo **usar** Granite ya publicado por la plataforma, n
 
 ## 1. Comprobar que la plataforma está lista
 
-En el clúster hub, como usuario con visibilidad sobre `ai-models` y `openshift-ingress`:
+En el clúster **hub** (kubeconfig de MaaS, no el spoke):
 
 ```bash
 oc get gateway maas-default-gateway -n openshift-ingress
@@ -37,27 +37,31 @@ Authorino exige `Authorization: Bearer sk-oai-…`. Sin token: 401/403. Cuota de
 Listado de modelos:
 
 ```bash
-DOMAIN=$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')
-HOST="https://maas.${DOMAIN}"
-
-curl -sk -H "Authorization: Bearer ${MAAS_API_KEY}" "${HOST}/v1/models"
+export MAAS_HOST=https://maas.apps.<HUB_DOMAIN>
+export MAAS_API_KEY=sk-oai-...
+curl -sk -H "Authorization: Bearer ${MAAS_API_KEY}" "${MAAS_HOST}/v1/models"
 ```
+
+No uses el dominio de aplicaciones del spoke. `./scripts/probe-maas.sh` exige `MAAS_HOST`.
 
 ## 3. Crear una API key para la demo
 
 Las keys **no se versionan**. El script [`scripts/create-maas-key.sh`](../scripts/create-maas-key.sh) llama a `POST /maas-api/v1/api-keys` con el token de `oc whoami -t` y la suscripción `free-models-subscription`.
 
 ```bash
+export KUBECONFIG=/path/to/hub.kubeconfig
+export MAAS_HOST=https://maas.apps.<HUB_DOMAIN>
 export MAAS_API_KEY=$(./scripts/create-maas-key.sh | jq -r .key)
 ```
 
-Guardar el valor en el Secret `demo-maas` (clave `api-key`) del namespace `demo-granite`. El orquestador y Llama Stack lo montan como `MAAS_API_KEY` / `VLLM_API_TOKEN`.
+Guardar el valor en el Secret `demo-maas` del namespace `demo-granite` **en el spoke**. El orquestador y Llama Stack lo montan como `MAAS_API_KEY` / `VLLM_API_TOKEN`.
 
 ## 4. Probe de inferencia
 
 ```bash
+export MAAS_HOST=https://maas.apps.<HUB_DOMAIN>
+export MAAS_API_KEY=sk-oai-...
 ./scripts/probe-maas.sh
-MODEL=granite-3-0-8b-instruct ./scripts/probe-maas.sh
 ```
 
 El script envía un `chat/completions` corto. Si responde 200 con `choices[0].message.content`, el plano de inferencia está listo para los agentes.
@@ -68,11 +72,11 @@ RHOAI 3.4 despliega Llama Stack con el CR `LlamaStackDistribution`. El operador 
 
 | Variable | Valor |
 | --- | --- |
-| `VLLM_URL` | `https://maas.<domain>/ai-models/granite-3-0-8b-instruct/v1` |
+| `VLLM_URL` | `https://maas.apps.<HUB_DOMAIN>/ai-models/granite-3-0-8b-instruct/v1` |
 | `INFERENCE_MODEL` | `granite-3-0-8b-instruct` |
-| `VLLM_API_TOKEN` | API key MaaS (desde Secret) |
-| `VLLM_TLS_VERIFY` | `true` en producción con CA del cluster; `false` solo en labs con certs autofirmados |
-| `POSTGRES_*` | Instancia dedicada en `demo-granite` |
+| `VLLM_API_TOKEN` | API key MaaS (Secret en el **spoke**) |
+| `VLLM_TLS_VERIFY` | `true` si el cert del hub es de confianza; `false` en labs |
+| `POSTGRES_*` | CNPG `llamastack-pg` **en el spoke** |
 
 Manifiesto: [`gitops/base/llamastack-distribution.yaml`](../gitops/base/llamastack-distribution.yaml). Configuración de toolgroups MCP: [`llamastack/config.yaml`](../llamastack/config.yaml).
 
