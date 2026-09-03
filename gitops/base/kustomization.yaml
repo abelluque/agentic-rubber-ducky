@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: demo-granite
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - configmap-pipeline.yaml
+  - configmap-librechat.yaml
+  - configmap-llamastack.yaml
+  - postgres.yaml
+  - llamastack-distribution.yaml
+  - mcp-servers.yaml
+  - orchestrator.yaml
+  - librechat.yaml
+  - routes.yaml

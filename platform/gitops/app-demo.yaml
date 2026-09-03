@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: granite-code-demo
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
+    targetRevision: main
+    path: gitops/overlays/demo-with-operators
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-granite
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true

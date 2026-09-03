@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-orchestrator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-mcp
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-llamastack
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-librechat

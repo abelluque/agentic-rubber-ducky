@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat-mongo
+spec:
+  selector:
+    app: librechat-mongo
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: librechat-mongo
+  template:
+    metadata:
+      labels:
+        app: librechat-mongo
+    spec:
+      containers:
+        - name: mongo
+          image: docker.io/library/mongo:7.0
+          ports:
+            - containerPort: 27017
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat
+spec:
+  selector:
+    app: librechat
+  ports:
+    - name: http
+      port: 3080
+      targetPort: 3080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: librechat
+  template:
+    metadata:
+      labels:
+        app: librechat
+    spec:
+      serviceAccountName: demo-librechat
+      containers:
+        - name: librechat
+          image: ghcr.io/danny-avila/librechat:v0.7.8
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3080"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: demo-librechat
+                  key: mongo-uri
+            - name: CREDS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: demo-librechat
+                  key: CREDS_KEY
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: demo-librechat
+                  key: JWT_SECRET
+            - name: ALLOW_REGISTRATION
+              value: "true"
+            - name: CONFIG_PATH
+              value: /app/librechat.yaml
+          ports:
+            - containerPort: 3080
+          volumeMounts:
+            - name: config
+              mountPath: /app/librechat.yaml
+              subPath: librechat.yaml
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: librechat-config

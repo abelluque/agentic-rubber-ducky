@@ -1,0 +1,44 @@
+apiVersion: llamastack.io/v1alpha1
+kind: LlamaStackDistribution
+metadata:
+  name: llamastack
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  replicas: 1
+  server:
+    containerSpec:
+      name: llama-stack
+      port: 8321
+      env:
+        - name: VLLM_URL
+          value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct/v1
+        - name: INFERENCE_MODEL
+          value: granite-3-0-8b-instruct
+        - name: VLLM_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: demo-maas
+              key: api-key
+        - name: VLLM_TLS_VERIFY
+          value: "false"
+        - name: POSTGRES_HOST
+          value: llamastack-postgres
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          value: llamastack
+        - name: POSTGRES_USER
+          value: llamastack
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: demo-postgres
+              key: password
+        - name: FMS_ORCHESTRATOR_URL
+          value: http://localhost
+    distribution:
+      name: rh-dev
+    storage:
+      size: 5Gi
+# The Llama Stack operator creates Service/llamastack on port 8321. Do not duplicate it here.

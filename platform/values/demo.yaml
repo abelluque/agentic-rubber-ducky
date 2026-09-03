@@ -1,0 +1,23 @@
+# Values for helm upgrade --install granite-agent-stack
+# Namespace: demo-granite
+librechat:
+  enabled: true
+  fullnameOverride: librechat
+  existingSecret: demo-librechat
+  orchestrator:
+    url: http://orchestrator.demo-granite.svc.cluster.local:8080/v1
+  llamastack:
+    url: http://llamastack.demo-granite.svc.cluster.local:8321/v1/openai/v1
+  model: granite-3-0-8b-instruct
+
+llamastack-postgres:
+  enabled: true
+  name: llamastack-pg
+  storage:
+    size: 10Gi
+
+librechat-mongodb:
+  enabled: true
+  name: librechat-mongo
+  user:
+    passwordSecret: librechat-mongo-user

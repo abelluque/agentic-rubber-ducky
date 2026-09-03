@@ -1,0 +1,20 @@
+{{- if .Values.cloudnativepg.enabled }}
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: cloudnative-pg
+  namespace: {{ .Values.cloudnativepg.namespace }}
+spec: {}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cloudnative-pg
+  namespace: {{ .Values.cloudnativepg.namespace }}
+spec:
+  channel: {{ .Values.cloudnativepg.channel }}
+  installPlanApproval: {{ .Values.cloudnativepg.installPlanApproval }}
+  name: cloudnative-pg
+  source: {{ .Values.cloudnativepg.catalog }}
+  sourceNamespace: {{ .Values.cloudnativepg.catalogNamespace }}
+{{- end }}

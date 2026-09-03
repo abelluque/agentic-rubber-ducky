@@ -1,0 +1,24 @@
+dsc:
+  name: default-dsc
+  namespace: redhat-ods-operator
+  toolsImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+
+llamastack:
+  enabled: true
+  communityFallback: false
+
+cloudnativepg:
+  enabled: true
+  namespace: cnpg-system
+  channel: stable-v1
+  catalog: community-operators
+  catalogNamespace: openshift-marketplace
+  installPlanApproval: Automatic
+
+mongodb:
+  enabled: true
+  namespace: mongodb-operator
+  channel: stable
+  catalog: community-operators
+  catalogNamespace: openshift-marketplace
+  installPlanApproval: Automatic

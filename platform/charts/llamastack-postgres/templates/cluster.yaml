@@ -1,0 +1,26 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+    app.kubernetes.io/name: llamastack-postgres
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "12"
+spec:
+  instances: {{ .Values.instances }}
+  {{- if .Values.imageName }}
+  imageName: {{ .Values.imageName }}
+  {{- end }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.database }}
+      owner: {{ .Values.owner }}
+  storage:
+    size: {{ .Values.storage.size }}
+    {{- if .Values.storage.storageClass }}
+    storageClass: {{ .Values.storage.storageClass }}
+    {{- end }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}

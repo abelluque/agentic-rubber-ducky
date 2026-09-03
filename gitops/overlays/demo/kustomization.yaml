@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: ConfigMap
+      name: demo-pipeline
+    patch: |-
+      - op: replace
+        path: /data/MAAS_BASE_URL
+        value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct
+  - target:
+      kind: LlamaStackDistribution
+      name: llamastack
+    patch: |-
+      - op: replace
+        path: /spec/server/containerSpec/env/0/value
+        value: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct/v1

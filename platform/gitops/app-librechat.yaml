@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: granite-librechat
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
+    targetRevision: main
+    path: platform/charts/librechat
+    helm:
+      releaseName: librechat
+      values: |
+        fullnameOverride: librechat
+        existingSecret: demo-librechat
+        orchestrator:
+          url: http://orchestrator.demo-granite.svc.cluster.local:8080/v1
+        llamastack:
+          url: http://llamastack.demo-granite.svc.cluster.local:8321/v1/openai/v1
+        model: granite-3-0-8b-instruct
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-granite
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

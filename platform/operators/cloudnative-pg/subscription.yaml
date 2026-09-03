@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cloudnative-pg
+  namespace: cnpg-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: cloudnative-pg
+  source: community-operators
+  sourceNamespace: openshift-marketplace

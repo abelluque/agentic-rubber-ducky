@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "librechat.fullname" . }}
+  labels:
+    {{- include "librechat.labels" . | nindent 4 }}
+    app: {{ include "librechat.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "librechat.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "librechat.labels" . | nindent 8 }}
+        app: {{ include "librechat.fullname" . }}
+    spec:
+      containers:
+        - name: librechat
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: {{ .Values.service.port | quote }}
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: mongo-uri
+            - name: CREDS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: CREDS_KEY
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: JWT_SECRET
+            - name: ALLOW_REGISTRATION
+              value: "true"
+            - name: CONFIG_PATH
+              value: /app/librechat.yaml
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/librechat.yaml
+              subPath: librechat.yaml
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "librechat.fullname" . }}-config

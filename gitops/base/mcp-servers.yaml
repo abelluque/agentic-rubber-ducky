@@ -1,0 +1,279 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-ast
+spec:
+  selector:
+    app: mcp-ast
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-github
+spec:
+  selector:
+    app: mcp-github
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-argocd
+spec:
+  selector:
+    app: mcp-argocd
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-ocp
+spec:
+  selector:
+    app: mcp-ocp
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-ast
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-ast
+  template:
+    metadata:
+      labels:
+        app: mcp-ast
+    spec:
+      serviceAccountName: demo-mcp
+      containers:
+        - name: mcp
+          image: image-registry.openshift-image-registry.svc:5000/demo-granite/mcp-tools:latest
+          env:
+            - name: MCP_ROLE
+              value: ast
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: DRY_RUN
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-github
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-github
+  template:
+    metadata:
+      labels:
+        app: mcp-github
+    spec:
+      serviceAccountName: demo-mcp
+      containers:
+        - name: mcp
+          image: image-registry.openshift-image-registry.svc:5000/demo-granite/mcp-tools:latest
+          env:
+            - name: MCP_ROLE
+              value: github
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: DRY_RUN
+            - name: ALLOWED_REPOS
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: ALLOWED_REPOS
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: demo-github
+                  key: token
+                  optional: true
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-argocd
+  template:
+    metadata:
+      labels:
+        app: mcp-argocd
+    spec:
+      serviceAccountName: demo-mcp
+      containers:
+        - name: mcp
+          image: image-registry.openshift-image-registry.svc:5000/demo-granite/mcp-tools:latest
+          env:
+            - name: MCP_ROLE
+              value: argocd
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: DRY_RUN
+            - name: ALLOWED_ARGOCD_APPS
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: ALLOWED_ARGOCD_APPS
+            - name: ARGOCD_TLS_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: ARGOCD_TLS_VERIFY
+            - name: ARGOCD_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: demo-argocd
+                  key: server
+                  optional: true
+            - name: ARGOCD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: demo-argocd
+                  key: token
+                  optional: true
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-ocp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-ocp
+  template:
+    metadata:
+      labels:
+        app: mcp-ocp
+    spec:
+      serviceAccountName: demo-mcp
+      containers:
+        - name: mcp
+          image: image-registry.openshift-image-registry.svc:5000/demo-granite/mcp-tools:latest
+          env:
+            - name: MCP_ROLE
+              value: ocp
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: DRY_RUN
+            - name: ALLOWED_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-pipeline
+                  key: ALLOWED_NAMESPACES
+            - name: TARGET_KUBECONFIG
+              value: /var/run/secrets/target/kubeconfig
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: kubeconfig
+              mountPath: /var/run/secrets/target
+              readOnly: true
+      volumes:
+        - name: kubeconfig
+          secret:
+            secretName: demo-target-kubeconfig
+            optional: true
+            items:
+              - key: kubeconfig
+                path: kubeconfig

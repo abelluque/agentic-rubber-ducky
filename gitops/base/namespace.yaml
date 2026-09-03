@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-granite
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+    openshift.io/cluster-monitoring: "true"
+  annotations:
+    openshift.io/description: LibreChat + Llama Stack agents consuming Granite via RHOAI MaaS

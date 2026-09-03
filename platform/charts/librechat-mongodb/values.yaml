@@ -1,0 +1,10 @@
+name: librechat-mongo
+version: "7.0.14"
+members: 1
+storage:
+  size: 10Gi
+  storageClass: ""
+user:
+  name: librechat
+  database: LibreChat
+  passwordSecret: librechat-mongo-user

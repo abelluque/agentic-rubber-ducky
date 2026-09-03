@@ -1,0 +1,17 @@
+{{- if .Values.cloudnativepg.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.cloudnativepg.namespace }}
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+{{- end }}
+---
+{{- if .Values.mongodb.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.mongodb.namespace }}
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+{{- end }}

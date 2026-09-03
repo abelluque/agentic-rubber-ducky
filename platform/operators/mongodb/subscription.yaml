@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: mongodb-community-operator
+  namespace: mongodb-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: mongodb-community-operator
+  source: community-operators
+  sourceNamespace: openshift-marketplace

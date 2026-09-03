@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wait-llamastack-crd
+  namespace: redhat-ods-operator
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "11"
+spec:
+  backoffLimit: 20
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: enable-llamastack
+      restartPolicy: OnFailure
+      containers:
+        - name: wait
+          image: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              wait_crd() {
+                local crd="$1"
+                echo "waiting for ${crd}"
+                for i in $(seq 1 60); do
+                  if oc get crd "${crd}" >/dev/null 2>&1; then
+                    oc wait --for=condition=Established "crd/${crd}" --timeout=60s
+                    return 0
+                  fi
+                  sleep 10
+                done
+                echo "timeout waiting for ${crd}" >&2
+                return 1
+              }
+              wait_crd llamastackdistributions.llamastack.io
+              wait_crd clusters.postgresql.cnpg.io
+              wait_crd mongodbcommunity.mongodbcommunity.mongodb.com

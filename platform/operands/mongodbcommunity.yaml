@@ -1,0 +1,38 @@
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: librechat-mongo
+  namespace: demo-granite
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "12"
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "7.0.14"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: librechat
+      db: admin
+      passwordSecretRef:
+        name: librechat-mongo-user
+      scramCredentialsSecretName: librechat-mongo-scram
+      roles:
+        - name: readWrite
+          db: LibreChat
+        - name: clusterMonitor
+          db: admin
+  statefulSet:
+    spec:
+      volumeClaimTemplates:
+        - metadata:
+            name: data-volume
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi

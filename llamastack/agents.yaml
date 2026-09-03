@@ -1,0 +1,33 @@
+# Agent personas registered conceptually with Llama Stack.
+# The LibreChat path uses orchestrator/pipeline.py with the same instructions.
+agents:
+  - id: code-agent
+    model: granite-3-0-8b-instruct
+    system_instruction: >
+      Eres un asistente de código basado en IBM Granite. Analiza y refactoriza Python.
+      Conserva firmas públicas. Elimina bucles anidados. No añadas dependencias.
+    tools:
+      - mcp::ast
+  - id: github-agent
+    model: granite-3-0-8b-instruct
+    system_instruction: >
+      Agente encargado de crear ramas y Pull Requests en GitHub.
+      Solo opera repositorios allowlisted. Nunca solicita tokens.
+    tools:
+      - mcp::github
+  - id: deploy-agent
+    model: granite-3-0-8b-instruct
+    system_instruction: >
+      Agente DevOps. Sincroniza Argo CD sin prune y comprueba Pods en el clúster de destino.
+    tools:
+      - mcp::argocd
+      - mcp::ocp
+  - id: devops-supervisor
+    model: granite-3-0-8b-instruct
+    system_instruction: >
+      Coordinas Code, GitHub y Deploy en ese orden. Si el código no valida, no abres PR ni haces sync.
+    tools:
+      - mcp::ast
+      - mcp::github
+      - mcp::argocd
+      - mcp::ocp

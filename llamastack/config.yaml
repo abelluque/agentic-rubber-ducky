@@ -1,0 +1,48 @@
+# Llama Stack run.yaml (mounted as ConfigMap llamastack-run).
+# Inference goes to RHOAI MaaS (remote vLLM), not to an in-cluster GPU pod owned by this demo.
+version: "2"
+image_name: rh-dev
+apis:
+  - inference
+  - agents
+  - tool_runtime
+providers:
+  inference:
+    - provider_id: vllm-maas
+      provider_type: remote::vllm
+      config:
+        url: ${env.VLLM_URL}
+        max_tokens: 4096
+        api_token: ${env.VLLM_API_TOKEN:=}
+        tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+  agents:
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
+      config: {}
+  tool_runtime:
+    - provider_id: model-context-protocol
+      provider_type: remote::model-context-protocol
+      config: {}
+models:
+  - model_id: granite-3-0-8b-instruct
+    provider_id: vllm-maas
+    provider_model_id: granite-3-0-8b-instruct
+    metadata:
+      description: IBM Granite 3.0 8B Instruct served through RHOAI MaaS
+tool_groups:
+  - toolgroup_id: mcp::ast
+    provider_id: model-context-protocol
+    mcp_endpoint:
+      uri: http://mcp-ast.demo-granite.svc.cluster.local:8000/mcp
+  - toolgroup_id: mcp::github
+    provider_id: model-context-protocol
+    mcp_endpoint:
+      uri: http://mcp-github.demo-granite.svc.cluster.local:8000/mcp
+  - toolgroup_id: mcp::argocd
+    provider_id: model-context-protocol
+    mcp_endpoint:
+      uri: http://mcp-argocd.demo-granite.svc.cluster.local:8000/mcp
+  - toolgroup_id: mcp::ocp
+    provider_id: model-context-protocol
+    mcp_endpoint:
+      uri: http://mcp-ocp.demo-granite.svc.cluster.local:8000/mcp

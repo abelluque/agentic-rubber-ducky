@@ -1,0 +1,20 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: mongodb-community
+  namespace: {{ .Values.mongodb.namespace }}
+spec: {}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: mongodb-community-operator
+  namespace: {{ .Values.mongodb.namespace }}
+spec:
+  channel: {{ .Values.mongodb.channel }}
+  installPlanApproval: {{ .Values.mongodb.installPlanApproval }}
+  name: mongodb-community-operator
+  source: {{ .Values.mongodb.catalog }}
+  sourceNamespace: {{ .Values.mongodb.catalogNamespace }}
+{{- end }}

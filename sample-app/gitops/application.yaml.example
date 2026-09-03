@@ -1,0 +1,23 @@
+# Application for the TARGET/QA cluster. Deploy this in that cluster's Argo CD.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orders-qa
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
+    targetRevision: main
+    path: sample-app/gitops
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: orders-qa
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

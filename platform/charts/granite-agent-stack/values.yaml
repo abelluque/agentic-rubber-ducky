@@ -1,0 +1,28 @@
+librechat:
+  enabled: true
+  fullnameOverride: librechat
+  existingSecret: demo-librechat
+  orchestrator:
+    url: http://orchestrator.demo-granite.svc.cluster.local:8080/v1
+  llamastack:
+    url: http://llamastack.demo-granite.svc.cluster.local:8321/v1/openai/v1
+  model: granite-3-0-8b-instruct
+
+llamastack-postgres:
+  enabled: true
+  name: llamastack-pg
+  instances: 1
+  database: llamastack
+  owner: llamastack
+  storage:
+    size: 10Gi
+
+librechat-mongodb:
+  enabled: true
+  name: librechat-mongo
+  members: 1
+  version: "7.0.14"
+  user:
+    name: librechat
+    database: LibreChat
+    passwordSecret: librechat-mongo-user

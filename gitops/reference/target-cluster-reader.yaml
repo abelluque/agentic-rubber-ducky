@@ -1,0 +1,34 @@
+# Apply on the TARGET/QA cluster in namespace orders-qa.
+# Bind the resulting token/kubeconfig to Secret demo-target-kubeconfig on the hub.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: granite-agent-reader
+  namespace: orders-qa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: granite-agent-reader
+  namespace: orders-qa
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: granite-agent-reader
+  namespace: orders-qa
+subjects:
+  - kind: ServiceAccount
+    name: granite-agent-reader
+    namespace: orders-qa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: granite-agent-reader

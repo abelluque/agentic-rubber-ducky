@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+spec:
+  selector:
+    app: orchestrator
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      serviceAccountName: demo-orchestrator
+      containers:
+        - name: orchestrator
+          image: image-registry.openshift-image-registry.svc:5000/demo-granite/orchestrator:latest
+          envFrom:
+            - configMapRef:
+                name: demo-pipeline
+          env:
+            - name: MAAS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: demo-maas
+                  key: api-key
+            - name: MCP_AST_URL
+              value: http://mcp-ast.demo-granite.svc.cluster.local:8000
+            - name: MCP_GITHUB_URL
+              value: http://mcp-github.demo-granite.svc.cluster.local:8000
+            - name: MCP_ARGOCD_URL
+              value: http://mcp-argocd.demo-granite.svc.cluster.local:8000
+            - name: MCP_OCP_URL
+              value: http://mcp-ocp.demo-granite.svc.cluster.local:8000
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]

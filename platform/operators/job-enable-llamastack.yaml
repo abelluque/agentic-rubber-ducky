@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: enable-llamastack-operator
+  namespace: redhat-ods-operator
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: enable-llamastack
+      restartPolicy: OnFailure
+      containers:
+        - name: patch
+          image: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              DSC="${DSC_NAME:-default-dsc}"
+              oc patch datasciencecluster "${DSC}" --type=merge -p \
+                '{"spec":{"components":{"llamastackoperator":{"managementState":"Managed"}}}}'
+              echo "llamastackoperator.managementState=Managed on ${DSC}"
+          env:
+            - name: DSC_NAME
+              value: default-dsc

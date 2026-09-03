@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: granite-demo-operators
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/abelluque/agentic-rubber-ducky.git
+    targetRevision: main
+    path: platform/operators
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redhat-ods-operator
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

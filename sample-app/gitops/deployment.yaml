@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-qa
+  labels:
+    app: orders-qa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-qa
+  template:
+    metadata:
+      labels:
+        app: orders-qa
+    spec:
+      containers:
+        - name: orders
+          image: image-registry.openshift-image-registry.svc:5000/orders-qa/orders:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]

@@ -1,0 +1,4 @@
+NOTES.txt for {{ .Chart.Name }}
+
+Llama Stack operator: activated via DataScienceCluster (llamastackoperator=Managed).
+CloudNativePG Cluster service: {{ .Values.name }}-rw:5432 (application secret {{ .Values.name }}-app).

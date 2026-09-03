@@ -1,0 +1,19 @@
+apiVersion: v2
+name: granite-agent-stack
+description: Umbrella chart — LibreChat, CloudNativePG for Llama Stack, MongoDB Community for LibreChat.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: librechat
+    version: 0.1.0
+    repository: file://../librechat
+    condition: librechat.enabled
+  - name: llamastack-postgres
+    version: 0.1.0
+    repository: file://../llamastack-postgres
+    condition: llamastack-postgres.enabled
+  - name: librechat-mongodb
+    version: 0.1.0
+    repository: file://../librechat-mongodb
+    condition: librechat-mongodb.enabled

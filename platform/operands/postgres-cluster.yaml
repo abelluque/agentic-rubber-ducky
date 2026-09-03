@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: llamastack-pg
+  namespace: demo-granite
+  labels:
+    app.kubernetes.io/part-of: rhoai-granite-code-demo
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "12"
+spec:
+  instances: 1
+  bootstrap:
+    initdb:
+      database: llamastack
+      owner: llamastack
+  storage:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

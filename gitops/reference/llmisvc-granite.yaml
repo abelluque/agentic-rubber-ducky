@@ -1,0 +1,42 @@
+# Referencia documental. NO se aplica desde gitops/overlays/demo.
+# La fuente de verdad del modelo es rhoai-gitops (overlay ocpai-prd-mtz / opentlc).
+#
+# Contrato MaaS: LLMInferenceService + MaaSModelRef + MaaSSubscription + MaaSAuthPolicy.
+# No usar serving.kserve.io/v1beta1 InferenceService para Granite en esta plataforma.
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  name: granite-3-0-8b-instruct
+  namespace: ai-models
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+  annotations:
+    openshift.io/display-name: Granite 3.0 8B Instruct
+    opendatahub.io/genai-use-case: chat
+    opendatahub.io/hardware-profile-name: gpu
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+spec:
+  model:
+    name: granite-3-0-8b-instruct
+    uri: hf://ibm-granite/granite-3.0-8b-instruct
+  replicas: 2
+  router:
+    gateway:
+      refs:
+        - name: maas-default-gateway
+          namespace: openshift-ingress
+    route: {}
+    scheduler: {}
+---
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSModelRef
+metadata:
+  name: granite-3-0-8b-instruct
+  namespace: ai-models
+  labels:
+    migration.maas.opendatahub.io/from-tier: free
+spec:
+  modelRef:
+    kind: LLMInferenceService
+    name: granite-3-0-8b-instruct

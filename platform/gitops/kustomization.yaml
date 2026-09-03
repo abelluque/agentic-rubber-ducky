@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - app-operators.yaml
+  - app-operands.yaml
+  - app-librechat.yaml
+  - app-demo.yaml

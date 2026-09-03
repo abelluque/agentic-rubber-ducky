@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-pipeline
+data:
+  DRY_RUN: "true"
+  MAAS_MODEL: granite-3-0-8b-instruct
+  MAAS_TLS_VERIFY: "false"
+  MAAS_BASE_URL: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct
+  DEFAULT_REPO: example/orders
+  DEFAULT_FILE_PATH: sample-app/src/orders/pricing.py
+  DEFAULT_FUNCTION: calculate_order_total
+  DEFAULT_ARGOCD_APP: orders-qa
+  DEFAULT_NAMESPACE: orders-qa
+  DEFAULT_DEPLOYMENT: orders-qa
+  DEFAULT_BASE_BRANCH: main
+  ALLOWED_REPOS: example/orders
+  ALLOWED_ARGOCD_APPS: orders-qa
+  ALLOWED_NAMESPACES: orders-qa
+  ARGOCD_TLS_VERIFY: "false"

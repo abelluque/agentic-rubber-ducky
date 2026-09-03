@@ -1,0 +1,41 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: librechat
+spec:
+  to:
+    kind: Service
+    name: librechat
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: orchestrator
+spec:
+  to:
+    kind: Service
+    name: orchestrator
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: llamastack
+spec:
+  to:
+    kind: Service
+    name: llamastack
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
