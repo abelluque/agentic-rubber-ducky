@@ -14,10 +14,11 @@ endpoints:
       modelDisplayLabel: "DevOps Agent (IBM Granite MaaS)"
     - name: "Granite Chat (Llama Stack)"
       apiKey: "${LLAMASTACK_API_KEY:-not-used}"
-      baseURL: "http://llamastack.demo-granite.svc.cluster.local:8321/v1/openai/v1"
+      baseURL: "http://llamastack.demo-granite.svc.cluster.local:8321/v1"
       models:
         default:
-          - "granite-3-0-8b-instruct"
-        fetch: false
+          - "vllm-inference/granite-3-1-2b-instruct"
+          - "granite-3-1-2b-instruct"
+        fetch: true
       titleConvo: true
       modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"

@@ -25,6 +25,7 @@ data:
           models:
             default:
               - {{ .Values.model | quote }}
-            fetch: false
+              - "vllm-inference/{{ .Values.model }}"
+            fetch: true
           titleConvo: true
           modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"
