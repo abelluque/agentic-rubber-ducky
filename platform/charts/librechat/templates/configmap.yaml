@@ -18,6 +18,11 @@ data:
               - {{ .Values.model | quote }}
             fetch: true
           titleConvo: true
+          maxContextTokens: 768
+          dropParams:
+            - max_tokens
+          addParams:
+            max_tokens: 512
           modelDisplayLabel: "DevOps Agent (IBM Granite MaaS)"
         - name: "Granite Chat (Llama Stack)"
           apiKey: "not-used"
@@ -28,4 +33,9 @@ data:
               - "vllm-inference/{{ .Values.model }}"
             fetch: true
           titleConvo: true
+          maxContextTokens: 768
+          dropParams:
+            - max_tokens
+          addParams:
+            max_tokens: 512
           modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"

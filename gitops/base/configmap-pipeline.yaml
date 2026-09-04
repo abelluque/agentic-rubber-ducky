@@ -7,6 +7,8 @@ data:
   MAAS_HOST: https://maas.apps.CHANGE_ME.example.com
   MAAS_MODEL: granite-3-0-8b-instruct
   MAAS_TLS_VERIFY: "false"
+  MAAS_MAX_TOKENS: "512"
+  MAAS_CONTEXT_LEN: "1024"
   MAAS_BASE_URL: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct
   MAAS_VLLM_URL: https://maas.apps.CHANGE_ME.example.com/ai-models/granite-3-0-8b-instruct/v1
   DEFAULT_REPO: example/orders

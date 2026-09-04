@@ -19,7 +19,7 @@ data:
           provider_type: remote::vllm
           config:
             url: ${env.VLLM_URL}
-            max_tokens: 4096
+            max_tokens: 512
             api_token: ${env.VLLM_API_TOKEN:=}
             tls_verify: ${env.VLLM_TLS_VERIFY:=true}
       agents:

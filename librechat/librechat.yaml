@@ -11,6 +11,11 @@ endpoints:
           - "granite-3-0-8b-instruct"
         fetch: true
       titleConvo: true
+      maxContextTokens: 768
+      dropParams:
+        - max_tokens
+      addParams:
+        max_tokens: 512
       modelDisplayLabel: "DevOps Agent (IBM Granite MaaS)"
     - name: "Granite Chat (Llama Stack)"
       apiKey: "${LLAMASTACK_API_KEY:-not-used}"
@@ -21,4 +26,9 @@ endpoints:
           - "granite-3-1-2b-instruct"
         fetch: true
       titleConvo: true
+      maxContextTokens: 768
+      dropParams:
+        - max_tokens
+      addParams:
+        max_tokens: 512
       modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"
