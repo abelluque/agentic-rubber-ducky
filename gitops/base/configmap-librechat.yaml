@@ -16,6 +16,11 @@ data:
               - "granite-3-1-2b-instruct"
             fetch: true
           titleConvo: true
+          maxContextTokens: 768
+          dropParams:
+            - max_tokens
+          addParams:
+            max_tokens: 512
           modelDisplayLabel: "DevOps Agent (IBM Granite MaaS)"
         - name: "Granite Chat (Llama Stack)"
           apiKey: "not-used"
@@ -26,4 +31,9 @@ data:
               - "granite-3-1-2b-instruct"
             fetch: true
           titleConvo: true
+          maxContextTokens: 768
+          dropParams:
+            - max_tokens
+          addParams:
+            max_tokens: 512
           modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"

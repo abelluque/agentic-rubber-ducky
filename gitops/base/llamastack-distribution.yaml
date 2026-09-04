@@ -22,6 +22,9 @@ spec:
               key: api-key
         - name: VLLM_TLS_VERIFY
           value: "false"
+        # Hub granite-3-1-2b-instruct is served with max_model_len=1024 (prompt + output).
+        - name: VLLM_MAX_TOKENS
+          value: "512"
         - name: POSTGRES_HOST
           value: llamastack-postgres
         - name: POSTGRES_PORT
