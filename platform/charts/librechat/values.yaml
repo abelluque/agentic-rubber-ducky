@@ -18,9 +18,9 @@ orchestrator:
   url: http://orchestrator.demo-granite.svc.cluster.local:8080/v1
 
 llamastack:
-  url: http://llamastack.demo-granite.svc.cluster.local:8321/v1/openai/v1
+  url: http://llamastack.demo-granite.svc.cluster.local:8321/v1
 
-model: granite-3-0-8b-instruct
+model: granite-3-1-2b-instruct
 
 resources:
   requests:
