@@ -32,9 +32,9 @@ def chat(
     max_tokens: int | None = None,
 ) -> str:
     model = os.environ.get("MAAS_MODEL", "granite-3-0-8b-instruct")
-    # Hub granite-3-1-2b-instruct is served with max_model_len=1024 (prompt + output).
-    context_len = int(os.environ.get("MAAS_CONTEXT_LEN", "1024"))
-    requested = max_tokens if max_tokens is not None else int(os.environ.get("MAAS_MAX_TOKENS", "512"))
+    # Hub granite-3-1-2b-instruct is served with max_model_len=4096 (prompt + output).
+    context_len = int(os.environ.get("MAAS_CONTEXT_LEN", "4096"))
+    requested = max_tokens if max_tokens is not None else int(os.environ.get("MAAS_MAX_TOKENS", "1024"))
     room = context_len - _estimate_tokens(messages) - 32
     if room < 16:
         raise RuntimeError(

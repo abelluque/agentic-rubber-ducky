@@ -18,14 +18,14 @@ data:
               - {{ .Values.model | quote }}
             fetch: false
           titleConvo: false
-          maxContextTokens: 768
+          maxContextTokens: 3072
           dropParams:
             - user
             - frequency_penalty
             - presence_penalty
             - stop
           addParams:
-            max_tokens: 256
+            max_tokens: 1024
           modelDisplayLabel: "DevOps Agent (IBM Granite MaaS)"
         - name: "Granite Chat (Llama Stack)"
           apiKey: "not-used"
@@ -35,12 +35,12 @@ data:
               - "vllm-inference/{{ .Values.model }}"
             fetch: false
           titleConvo: false
-          maxContextTokens: 768
+          maxContextTokens: 3072
           dropParams:
             - user
             - frequency_penalty
             - presence_penalty
             - stop
           addParams:
-            max_tokens: 256
+            max_tokens: 1024
           modelDisplayLabel: "Granite Chat (MaaS via Llama Stack)"
